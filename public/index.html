@@ -1,122 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Cricket Score | SA 🇿🇦 vs AUS 🇦🇺</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Cricket Score 🏏</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.3/css/bulma.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
   <style>
-    * {
+    html, body {
+      min-height: 100vh;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+      font-family: "Geist Mono", serif;
+      background-color: #ddd4b3;
+      color: #121212;
     }
-
-    body {
-      background: radial-gradient(circle, #101820, #06080d);
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .scoreboard {
-      background: linear-gradient(135deg, #1a1f2b, #0f1117);
-      padding: 2rem;
+    .box {
+      background: #70135b;
+      border: 1px solid #B33771;
+      color: #F8EFBA;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      max-width: 600px;
-      width: 100%;
+      padding: 30px 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      letter-spacing: .04em;
+      transition: 0.5s ease-in-out;
+    }
+    .input {
+      font-family: "Geist Mono", serif;
+    }
+    .title {
+      font-family: "Geist Mono", serif;
       text-align: center;
-      animation: fadeIn 1s ease;
+      margin-bottom: 20px;
     }
-
-    .team-flags {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 1.2rem;
+    .notification {
+      display: none;
+      background-color: #8d290b;
+      color: rgb(245, 243, 147);
+      font-family: "Geist Mono", serif;
+      font-weight: 600;
     }
-
-    .team-flags img {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      border: 3px solid #fff;
-      background: #222;
-      object-fit: cover;
+    .notification.is-active {
+      display: block;
     }
-
-    .match-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #00ffa2;
-      margin-bottom: 1rem;
-      text-shadow: 0 0 8px #00ffa2;
+    .shake {
+      animation: shake 0.5s ease-in-out;
     }
-
-    .score {
-      color: #f8f8f8;
-      white-space: pre-line;
-      line-height: 1.6;
-      font-size: 1.05rem;
-    }
-
-    .footer {
-      margin-top: 2rem;
-      font-size: 0.8rem;
-      color: #aaa;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
     }
   </style>
 </head>
-
 <body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title is-5">Live Cricket Score 🏏</h1>
 
-  <div class="scoreboard">
-    <div class="team-flags">
-      <img src="https://flagcdn.com/w80/za.png" alt="South Africa Flag">
-      <img src="https://flagcdn.com/w80/au.png" alt="Australia Flag">
+      <div class="field mb-4">
+        <label class="label">Enter Match ID:</label>
+        <div class="control">
+          <input class="input is-warning" type="text" id="match-id" placeholder="Enter Match ID" value="106673">
+        </div>
+      </div>
+
+      <div id="notification" class="notification mt-4">
+        <span></span>
+      </div>
+
+      <div id="score-card" class="score-card box is-hidden" aria-live="polite">
+        <p id="score-output" tabindex="0"></p>
+      </div>
     </div>
-    <div class="match-title">South Africa 🇿🇦 vs Australia 🇦🇺</div>
-    <div class="score" id="score">Loading live score...</div>
-  </div>
-
-  <div class="footer">
-    ⚡ Live Updates | Powered by YourWebsite
-  </div>
+  </section>
 
   <script>
-    async function fetchScore() {
+    const canonicalLink = document.createElement('link');
+    canonicalLink.setAttribute('rel', 'canonical');
+    canonicalLink.setAttribute('href', window.location.href);
+    document.head.appendChild(canonicalLink);
+
+    document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const response = await fetch('score.txt');
-        const text = await response.text();
-        document.getElementById('score').textContent = text;
-      } catch (err) {
-        document.getElementById('score').textContent = '⚠️ Failed to load score.';
+        const matchIdInput = document.getElementById('match-id');
+        if (!matchIdInput) return;
+
+        const matchId = matchIdInput.value.trim();
+        if (matchId) {
+          localStorage.setItem('matchId', matchId);
+          await fetchScore(matchId);
+        }
+      } catch (error) {
+        console.error('Error loading match data:', error);
+      }
+    });
+
+    document.getElementById('match-id').addEventListener('change', function () {
+      const matchId = this.value.trim();
+      if (!matchId) {
+        showNotification("Match ID cannot be empty.");
+        return;
+      }
+      localStorage.setItem('matchId', matchId);
+      fetchScore(matchId);
+    });
+
+    function getCurrentDateTime() {
+      const options = {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      };
+      const now = new Date();
+      return now.toLocaleDateString("en-US", options);
+    }
+
+    async function fetchScore(matchId) {
+      document.getElementById('score-card').classList.add('is-hidden');
+
+      try {
+        const response = await fetch(`/score?id=${matchId}`);
+        if (!response.ok) throw new Error('Unable to fetch live score.');
+
+        const data = await response.json();
+        const currentTime = getCurrentDateTime();
+
+        let scoreOutput = '';
+        if (data.livescore === "Match Stats will Update Soon") {
+          scoreOutput = `🏏 ${data.title}<br>📝 ${data.update}<br>⌛ ${currentTime}`;
+        } else {
+          scoreOutput = `🏏 ${data.title}<br>🟢 score: ${data.livescore}<br>📊 ${data.runrate}<br>📝 ${data.update}<br>⌛ ${currentTime}`;
+        }
+
+        const scoreOutputElement = document.getElementById('score-output');
+        scoreOutputElement.innerHTML = scoreOutput;
+        scoreOutputElement.classList.add('shake');
+
+        const scoreCard = document.getElementById('score-card');
+        scoreCard.classList.remove('is-hidden');
+
+        setTimeout(() => {
+          scoreOutputElement.classList.remove('shake');
+        }, 500);
+
+      } catch (error) {
+        showNotification(error.message);
       }
     }
 
-    fetchScore();
-    setInterval(fetchScore, 5000); // Refresh every 5 seconds
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.querySelector('span').textContent = message;
+      notification.classList.add('is-active');
+      setTimeout(() => {
+        notification.classList.remove('is-active');
+      }, 2000);
+    }
   </script>
-
 </body>
-
 </html>
