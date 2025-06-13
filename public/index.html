@@ -14,26 +14,39 @@
       padding: 0;
       overflow-x: hidden;
       font-family: "Geist Mono", serif;
-      background-color: #ddd4b3;
-      color: #121212;
+      background-color: #0d0d0d;
+      color: #f5f5f5;
     }
     .box {
-      background: #70135b;
+      background: #1e1e1e;
       border: 1px solid #B33771;
       color: #F8EFBA;
       border-radius: 20px;
       padding: 30px 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       letter-spacing: .04em;
       transition: 0.5s ease-in-out;
-    }
-    .input {
-      font-family: "Geist Mono", serif;
     }
     .title {
       font-family: "Geist Mono", serif;
       text-align: center;
       margin-bottom: 20px;
+      font-size: 2.2rem;
+    }
+    .flag-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 20px;
+    }
+    .flag {
+      width: 60px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 2px solid #fff;
+      box-shadow: 0 0 5px #000;
     }
     .notification {
       display: none;
@@ -60,14 +73,22 @@
 <body>
   <section class="section">
     <div class="container">
-      <h1 class="title is-5">Live Cricket Score 🏏</h1>
 
-      <div class="field mb-4">
-        <label class="label">Enter Match ID:</label>
-        <div class="control">
-          <input class="input is-warning" type="text" id="match-id" placeholder="Enter Match ID" value="106673">
+      <div class="flag-row">
+        <div style="text-align:center;">
+          <img class="flag" src="https://flagcdn.com/w320/za.png" alt="South Africa Flag">
+          <p>South Africa</p>
+        </div>
+        <div style="text-align:center;">
+          <img class="flag" src="https://flagcdn.com/w320/au.png" alt="Australia Flag">
+          <p>Australia</p>
         </div>
       </div>
+
+      <h1 class="title">Live Cricket Score 🏏</h1>
+
+      <!-- Hidden input (used by JS, not shown) -->
+      <input type="hidden" id="match-id" value="106673" />
 
       <div id="notification" class="notification mt-4">
         <span></span>
@@ -98,16 +119,6 @@
       } catch (error) {
         console.error('Error loading match data:', error);
       }
-    });
-
-    document.getElementById('match-id').addEventListener('change', function () {
-      const matchId = this.value.trim();
-      if (!matchId) {
-        showNotification("Match ID cannot be empty.");
-        return;
-      }
-      localStorage.setItem('matchId', matchId);
-      fetchScore(matchId);
     });
 
     function getCurrentDateTime() {
